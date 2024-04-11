@@ -16,10 +16,13 @@ import javax.swing.JPanel
 class GitMojiConfig(private val project: Project) : SearchableConfigurable {
     private val mainPanel: JPanel
     private val useUnicode = JCheckBox(GitmojiBundle.message("config.useUnicode"))
+    private val renderCommitLog = JCheckBox(GitmojiBundle.message("config.renderCommitLog"))
+//    private val renderCommitLog = JCheckBox("config.renderCommitLog=渲染 Commit 日志中的文本 Emoji（替换文本为 Unicode 表情，重启生效）")
     private val displayEmoji =
         JCheckBox(GitmojiBundle.message("config.displayEmoji"))
     private val insertInCursorPosition = JCheckBox(GitmojiBundle.message("config.insertInCursorPosition"))
     private val includeGitMojiDescription = JCheckBox(GitmojiBundle.message("config.includeGitMojiDescription"))
+    private var renderCommitLogConfig: Boolean = false
     private var useUnicodeConfig: Boolean = false
     private var displayEmojiConfig: String = "emoji"
     private var insertInCursorPositionConfig: Boolean = false
@@ -32,13 +35,13 @@ class GitMojiConfig(private val project: Project) : SearchableConfigurable {
     private var languagesConfig:String = "auto"
 
     override fun isModified(): Boolean =
-        Configurable.isCheckboxModified(displayEmoji, displayEmojiConfig == "emoji") || Configurable.isCheckboxModified(
-            useUnicode,
-            useUnicodeConfig
-        ) || isModified(textAfterUnicode, textAfterUnicodeConfig) || Configurable.isCheckboxModified(
-            insertInCursorPosition,
-            insertInCursorPositionConfig
-        ) || Configurable.isCheckboxModified(includeGitMojiDescription, includeGitMojiDescriptionConfig)
+
+        Configurable.isCheckboxModified(displayEmoji, displayEmojiConfig == "emoji") ||
+                Configurable.isCheckboxModified(useUnicode, useUnicodeConfig) ||
+                Configurable.isCheckboxModified(renderCommitLog, renderCommitLogConfig) ||
+                isModified(textAfterUnicode, textAfterUnicodeConfig) ||
+                Configurable.isCheckboxModified(insertInCursorPosition, insertInCursorPositionConfig) ||
+                Configurable.isCheckboxModified(includeGitMojiDescription, includeGitMojiDescriptionConfig)
 
     private fun isModified(comboBox: ComboBox<String>, value: String): Boolean {
         return !Comparing.equal(comboBox.selectedItem, value)
@@ -51,11 +54,12 @@ class GitMojiConfig(private val project: Project) : SearchableConfigurable {
         val flow = GridLayout(20, 2)
         mainPanel = JPanel(flow)
         mainPanel.add(displayEmoji, null)
+        mainPanel.add(renderCommitLog,null)
         mainPanel.add(useUnicode, null)
         mainPanel.add(insertInCursorPosition, null)
         mainPanel.add(includeGitMojiDescription, null)
         val textAfterUnicodePanel = JPanel(FlowLayout(FlowLayout.LEADING))
-        textAfterUnicodePanel.add(JLabel("Character after inserted emoji ✨"))
+        textAfterUnicodePanel.add(JLabel("插入表情符号后的字符 ✨"))
         textAfterUnicodePanel.add(textAfterUnicode, null)
         mainPanel.add(textAfterUnicodePanel)
         val languageJPanel = JPanel(FlowLayout(FlowLayout.LEADING))
@@ -66,6 +70,7 @@ class GitMojiConfig(private val project: Project) : SearchableConfigurable {
 
     override fun apply() {
         displayEmojiConfig = if (displayEmoji.isSelected) "emoji" else "icon"
+        renderCommitLogConfig = renderCommitLog.isSelected
         useUnicodeConfig = useUnicode.isSelected
         insertInCursorPositionConfig = insertInCursorPosition.isSelected
         includeGitMojiDescriptionConfig = includeGitMojiDescription.isSelected
@@ -78,6 +83,7 @@ class GitMojiConfig(private val project: Project) : SearchableConfigurable {
 
         val projectInstance = PropertiesComponent.getInstance(project)
         val instance = PropertiesComponent.getInstance()
+        instance.setValue(CONFIG_RENDER_COMMIT_LOG,renderCommitLogConfig)
         projectInstance.setValue(CONFIG_DISPLAY_ICON, displayEmojiConfig)
         projectInstance.setValue(CONFIG_INSERT_IN_CURSOR_POSITION, insertInCursorPositionConfig)
         projectInstance.setValue(CONFIG_USE_UNICODE, useUnicodeConfig)
@@ -90,7 +96,7 @@ class GitMojiConfig(private val project: Project) : SearchableConfigurable {
     override fun reset() {
         val propertiesComponent = PropertiesComponent.getInstance(project)
         val instance = PropertiesComponent.getInstance()
-
+        renderCommitLogConfig = instance.getBoolean(CONFIG_RENDER_COMMIT_LOG,false)
         displayEmojiConfig = propertiesComponent.getValue(CONFIG_DISPLAY_ICON, defaultDisplayType())
         useUnicodeConfig = propertiesComponent.getBoolean(CONFIG_USE_UNICODE, false)
         insertInCursorPositionConfig = propertiesComponent.getBoolean(CONFIG_INSERT_IN_CURSOR_POSITION, false)
@@ -98,6 +104,7 @@ class GitMojiConfig(private val project: Project) : SearchableConfigurable {
         textAfterUnicodeConfig = propertiesComponent.getValue(CONFIG_AFTER_UNICODE, " ")
         languagesConfig = instance.getValue(CONFIG_LANGUAGE, "auto")
 
+        renderCommitLog.isSelected = renderCommitLogConfig
         displayEmoji.isSelected = displayEmojiConfig == "emoji"
         useUnicode.isSelected = useUnicodeConfig
         insertInCursorPosition.isSelected = insertInCursorPositionConfig

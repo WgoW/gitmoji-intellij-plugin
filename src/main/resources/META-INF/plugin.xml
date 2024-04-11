@@ -45,4 +45,8 @@
                              id="com.github.patou.gitmoji.config"/>
         <vcsLogCustomColumn implementation="com.github.patou.gitmoji.GitmojiCustomColumn" />
     </extensions>
+    <applicationListeners>
+        <listener class="com.github.patou.gitmoji.EmojiCommitLogALL"
+                  topic="com.intellij.ide.AppLifecycleListener" />
+    </applicationListeners>
 </idea-plugin>

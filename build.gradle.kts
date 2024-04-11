@@ -26,8 +26,9 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("com.google.code.gson:gson:2.10")
-    implementation("com.squareup.okhttp3:okhttp:4.9.1")
-    implementation("org.yaml:snakeyaml:1.28")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.yaml:snakeyaml:1.33")
+    implementation("javassist:javassist:3.12.1.GA")
 }
 
 // Set the JVM language level used to build the project.
